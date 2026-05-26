@@ -8,6 +8,14 @@
 
 La solución implementa un pipeline de datos en la nube sobre AWS que cubre las etapas de ingestión, transformación, catalogación y análisis de los datos de capturas pesqueras del proyecto The Sea Around Us. El diseño sigue el patrón de arquitectura por capas (medallion architecture en su variante raw/processed), usando servicios serverless o administrados en su totalidad para minimizar la operación de infraestructura.
 
+Bucket name: seaaroundus-data-eafit
+
+Filas en SAU-EEZ-242-v48-0 1: 27049
+
+Filas en SAU-GLOBAL-1-v48-0 1: 561675
+
+Filas en SAU-HighSeas-71-v48-0 1: 26720
+
 ---
 
 ## 2. Diagrama de Arquitectura

@@ -13,33 +13,33 @@
 ## ALEJANDRO SEPÚLVEDA — Infraestructura S3 e Ingestión de Datos
 
 **1.1 Configurar el bucket S3**
-- [ ] Crear el bucket principal en AWS S3 (ej: `seaaroundus-data-<iniciales>`)
-- [ ] Crear la estructura de prefijos: `raw/global/`, `raw/highseas/`, `raw/eez/`, `processed/`, `query-results/`
-- [ ] Habilitar versionado en el bucket
-- [ ] Crear el IAM Role con permisos de lectura/escritura sobre S3 para los servicios Glue y Athena
-- [ ] Anotar el nombre del bucket y el ARN del role en `docs/architecture.md`
+- [x] Crear el bucket principal en AWS S3 (ej: `seaaroundus-data-<iniciales>`)
+- [x] Crear la estructura de prefijos: `raw/global/`, `raw/highseas/`, `raw/eez/`, `processed/`, `query-results/`
+- [x] Habilitar versionado en el bucket
+- [x] Crear el IAM Role con permisos de lectura/escritura sobre S3 para los servicios Glue y Athena
+- [x] Anotar el nombre del bucket y el ARN del role en `docs/architecture.md`
 
 **1.2 Descargar y validar los archivos CSV**
-- [ ] Descargar `SAU-GLOBAL-1-v48-0.csv` desde seaaroundus.org
-- [ ] Descargar `SAU-HighSeas-71-v48-0.csv` desde seaaroundus.org
-- [ ] Descargar `SAU-EEZ-242-v48-0.csv` desde seaaroundus.org
-- [ ] Verificar encoding UTF-8 en los tres archivos
-- [ ] Verificar conteo de filas en cada archivo y registrarlo en `docs/architecture.md`
-- [ ] Confirmar que los encabezados coinciden con los esquemas documentados en el README
+- [x] Descargar `SAU-GLOBAL-1-v48-0.csv` desde seaaroundus.org
+- [x] Descargar `SAU-HighSeas-71-v48-0.csv` desde seaaroundus.org
+- [x] Descargar `SAU-EEZ-242-v48-0.csv` desde seaaroundus.org
+- [x] Verificar encoding UTF-8 en los tres archivos
+- [x] Verificar conteo de filas en cada archivo y registrarlo en `docs/architecture.md`
+- [x] Confirmar que los encabezados coinciden con los esquemas documentados en el README
 
 **1.3 Subir los CSV a S3**
-- [ ] Subir `SAU-GLOBAL-1-v48-0.csv` a `s3://<bucket>/raw/global/`
-- [ ] Subir `SAU-HighSeas-71-v48-0.csv` a `s3://<bucket>/raw/highseas/`
-- [ ] Subir `SAU-EEZ-242-v48-0.csv` a `s3://<bucket>/raw/eez/`
-- [ ] Verificar en la consola de S3 que los tres archivos están accesibles
-- [ ] Compartir el nombre del bucket y las rutas con Samuel Aristizabal
+- [x] Subir `SAU-GLOBAL-1-v48-0.csv` a `s3://<bucket>/raw/global/`
+- [x] Subir `SAU-HighSeas-71-v48-0.csv` a `s3://<bucket>/raw/highseas/`
+- [x] Subir `SAU-EEZ-242-v48-0.csv` a `s3://<bucket>/raw/eez/`
+- [x] Verificar en la consola de S3 que los tres archivos están accesibles
+- [x] Compartir el nombre del bucket y las rutas con Samuel Aristizabal
 
 **1.4 Documentar la arquitectura y escalabilidad**
-- [ ] Redactar el diagrama del pipeline (S3 → Glue → Athena) en `docs/architecture.md`
-- [ ] Documentar las decisiones de estructura de prefijos en S3
-- [ ] Proponer y documentar la estrategia de particionado para el dataset completo (todas las regiones oceánicas)
-- [ ] Estimar costo aproximado en AWS si se procesara el dataset global completo
-- [ ] Registrar los criterios de diseño que garantizan escalabilidad (Parquet, particionado, serverless)
+- [x] Redactar el diagrama del pipeline (S3 → Glue → Athena) en `docs/architecture.md`
+- [x] Documentar las decisiones de estructura de prefijos en S3
+- [x] Proponer y documentar la estrategia de particionado para el dataset completo (todas las regiones oceánicas)
+- [x] Estimar costo aproximado en AWS si se procesara el dataset global completo
+- [x] Registrar los criterios de diseño que garantizan escalabilidad (Parquet, particionado, serverless)
 
 ---
 
