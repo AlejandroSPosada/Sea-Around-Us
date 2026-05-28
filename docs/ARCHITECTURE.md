@@ -87,13 +87,14 @@ Filas en SAU-HighSeas-71-v48-0 1: 26720
 
 Los tres archivos CSV se cargan manualmente al bucket S3 bajo el prefijo `raw/`. Esta capa conserva los datos exactamente como vienen de la fuente, sin ninguna modificación, como respaldo de la información original.
 
-| Prefijo S3 | Archivo fuente |
-|---|---|
-| `raw/global/` | `SAU-GLOBAL-1-v48-0.csv` |
+| Prefijo S3      | Archivo fuente              |
+| --------------- | --------------------------- |
+| `raw/global/`   | `SAU-GLOBAL-1-v48-0.csv`    |
 | `raw/highseas/` | `SAU-HighSeas-71-v48-0.csv` |
-| `raw/eez/` | `SAU-EEZ-242-v48-0.csv` |
+| `raw/eez/`      | `SAU-EEZ-242-v48-0.csv`     |
 
 **Decisiones de diseño:**
+
 - Se usa un único bucket con prefijos en lugar de tres buckets separados para simplificar la gestión de permisos IAM y reducir costos de operación.
 - El versionado está habilitado en el bucket para permitir recuperar versiones anteriores de los archivos si se actualizan en el futuro.
 
@@ -102,6 +103,7 @@ Los tres archivos CSV se cargan manualmente al bucket S3 bajo el prefijo `raw/`.
 Cada archivo CSV tiene su propio Glue Job independiente. Esto permite ejecutarlos en paralelo, facilita el mantenimiento individual de cada transformación y hace más claro el linaje de datos.
 
 **Transformaciones aplicadas en los tres Jobs:**
+
 - Normalización de nombres de columnas a snake_case
 - Casteo explícito de tipos: `year` → integer, `tonnes` → float, `landed_value` → float
 - Identificación y tratamiento de valores nulos en columnas críticas (`tonnes`, `landed_value`, `fishing_entity`)
@@ -109,18 +111,20 @@ Cada archivo CSV tiene su propio Glue Job independiente. Esto permite ejecutarlo
 
 **Salida de cada Job:**
 
-| Job | Entrada | Salida | Partición |
-|---|---|---|---|
-| `clean_global` | `raw/global/` | `processed/global/` | `year` |
-| `clean_highseas` | `raw/highseas/` | `processed/highseas/` | `year` |
-| `clean_eez` | `raw/eez/` | `processed/eez/` | `year` |
+| Job              | Entrada         | Salida                | Partición |
+| ---------------- | --------------- | --------------------- | --------- |
+| `clean_global`   | `raw/global/`   | `processed/global/`   | `year`    |
+| `clean_highseas` | `raw/highseas/` | `processed/highseas/` | `year`    |
+| `clean_eez`      | `raw/eez/`      | `processed/eez/`      | `year`    |
 
 **Justificación del formato Parquet:**
+
 - Almacenamiento columnar: Athena solo lee las columnas que una consulta necesita, reduciendo el volumen de datos escaneados y por tanto el costo.
 - Compresión eficiente: los archivos CSV originales se reducen significativamente en tamaño.
 - Soporte nativo en Athena y Glue sin configuración adicional.
 
 **Justificación del particionado por `year`:**
+
 - La mayoría de las consultas analíticas filtran por rango de años. El particionado permite que Athena descarte particiones irrelevantes sin leerlas (partition pruning).
 - El dataset cubre 1950–2018 (68 años), lo que genera 68 particiones por tabla: un número manejable que no genera overhead de metadatos.
 
@@ -130,73 +134,74 @@ Los Crawlers de Glue inspeccionan los datos procesados en S3 y registran automá
 
 **Base de datos del catálogo:** `seaaroundus_db`
 
-| Tabla en el catálogo | Origen en S3 |
-|---|---|
-| `global` | `processed/global/` |
-| `highseas` | `processed/highseas/` |
-| `eez` | `processed/eez/` |
+| Tabla en el catálogo | Origen en S3          |
+| -------------------- | --------------------- |
+| `global`             | `processed/global/`   |
+| `highseas`           | `processed/highseas/` |
+| `eez`                | `processed/eez/`      |
 
 **Esquema final — tabla `global`:**
 
-| Columna | Tipo | Descripción |
-|---|---|---|
-| `year` | int | Año de la captura |
-| `fishing_entity` | string | País o entidad pesquera |
-| `fishing_sector` | string | Sector (Industrial, Artisanal, Subsistence, Recreational) |
-| `catch_type` | string | Tipo de captura (Landings, Discards) |
-| `reporting_status` | string | Reported o Unreported |
-| `gear_type` | string | Tipo de arte de pesca |
-| `end_use_type` | string | Uso final (Direct human consumption, Discards, etc.) |
-| `tonnes` | double | Toneladas capturadas |
-| `landed_value` | double | Valor en USD 2010 |
+| Columna            | Tipo   | Descripción                                               |
+| ------------------ | ------ | --------------------------------------------------------- |
+| `year`             | int    | Año de la captura                                         |
+| `fishing_entity`   | string | País o entidad pesquera                                   |
+| `fishing_sector`   | string | Sector (Industrial, Artisanal, Subsistence, Recreational) |
+| `catch_type`       | string | Tipo de captura (Landings, Discards)                      |
+| `reporting_status` | string | Reported o Unreported                                     |
+| `gear_type`        | string | Tipo de arte de pesca                                     |
+| `end_use_type`     | string | Uso final (Direct human consumption, Discards, etc.)      |
+| `tonnes`           | double | Toneladas capturadas                                      |
+| `landed_value`     | double | Valor en USD 2010                                         |
 
 **Esquema final — tabla `highseas`:**
 
-| Columna | Tipo | Descripción |
-|---|---|---|
-| `area_name` | string | Nombre del área de alta mar |
-| `area_type` | string | Tipo de área (high_seas) |
-| `year` | int | Año de la captura |
-| `scientific_name` | string | Nombre científico de la especie |
-| `common_name` | string | Nombre común de la especie |
-| `functional_group` | string | Grupo funcional ecológico |
-| `commercial_group` | string | Grupo comercial |
-| `fishing_entity` | string | País o entidad pesquera |
-| `fishing_sector` | string | Sector de pesca |
-| `catch_type` | string | Tipo de captura |
-| `reporting_status` | string | Reported o Unreported |
-| `gear_type` | string | Tipo de arte de pesca |
-| `end_use_type` | string | Uso final |
-| `tonnes` | double | Toneladas capturadas |
-| `landed_value` | double | Valor en USD 2010 |
+| Columna            | Tipo   | Descripción                     |
+| ------------------ | ------ | ------------------------------- |
+| `area_name`        | string | Nombre del área de alta mar     |
+| `area_type`        | string | Tipo de área (high_seas)        |
+| `year`             | int    | Año de la captura               |
+| `scientific_name`  | string | Nombre científico de la especie |
+| `common_name`      | string | Nombre común de la especie      |
+| `functional_group` | string | Grupo funcional ecológico       |
+| `commercial_group` | string | Grupo comercial                 |
+| `fishing_entity`   | string | País o entidad pesquera         |
+| `fishing_sector`   | string | Sector de pesca                 |
+| `catch_type`       | string | Tipo de captura                 |
+| `reporting_status` | string | Reported o Unreported           |
+| `gear_type`        | string | Tipo de arte de pesca           |
+| `end_use_type`     | string | Uso final                       |
+| `tonnes`           | double | Toneladas capturadas            |
+| `landed_value`     | double | Valor en USD 2010               |
 
 **Esquema final — tabla `eez`:**
 
-| Columna | Tipo | Descripción |
-|---|---|---|
-| `area_name` | string | Nombre del área (Fiji) |
-| `area_type` | string | Tipo de área (eez) |
-| `data_layer` | string | Tipo de dato (Reconstructed domestic catch, etc.) |
-| `uncertainty_score` | int | Puntaje de incertidumbre de la reconstrucción |
-| `year` | int | Año de la captura |
-| `scientific_name` | string | Nombre científico de la especie |
-| `fish_name` | string | Nombre común de la especie |
-| `functional_group` | string | Grupo funcional ecológico |
-| `commercial_group` | string | Grupo comercial |
-| `country` | string | País que realizó la captura |
-| `fishing_sector` | string | Sector de pesca |
-| `catch_type` | string | Tipo de captura |
-| `reporting_status` | string | Reported o Unreported |
-| `gear_type` | string | Tipo de arte de pesca |
-| `end_use_type` | string | Uso final |
-| `tonnes` | double | Toneladas capturadas |
-| `landed_value` | double | Valor en USD 2010 |
+| Columna             | Tipo   | Descripción                                       |
+| ------------------- | ------ | ------------------------------------------------- |
+| `area_name`         | string | Nombre del área (Fiji)                            |
+| `area_type`         | string | Tipo de área (eez)                                |
+| `data_layer`        | string | Tipo de dato (Reconstructed domestic catch, etc.) |
+| `uncertainty_score` | int    | Puntaje de incertidumbre de la reconstrucción     |
+| `year`              | int    | Año de la captura                                 |
+| `scientific_name`   | string | Nombre científico de la especie                   |
+| `fish_name`         | string | Nombre común de la especie                        |
+| `functional_group`  | string | Grupo funcional ecológico                         |
+| `commercial_group`  | string | Grupo comercial                                   |
+| `country`           | string | País que realizó la captura                       |
+| `fishing_sector`    | string | Sector de pesca                                   |
+| `catch_type`        | string | Tipo de captura                                   |
+| `reporting_status`  | string | Reported o Unreported                             |
+| `gear_type`         | string | Tipo de arte de pesca                             |
+| `end_use_type`      | string | Uso final                                         |
+| `tonnes`            | double | Toneladas capturadas                              |
+| `landed_value`      | double | Valor en USD 2010                                 |
 
 ### 3.4 Capa de Análisis — Amazon Athena
 
 Athena ejecuta consultas SQL estándar (compatible con Presto/Trino) directamente sobre los archivos Parquet en S3, sin necesidad de cargar los datos en ningún motor de base de datos. Los resultados se almacenan automáticamente en `s3://<bucket>/query-results/`.
 
 **Configuración:**
+
 - Workgroup: default (o uno propio del proyecto)
 - Output location: `s3://<bucket>/query-results/`
 - Base de datos activa: `seaaroundus_db`
@@ -244,11 +249,11 @@ s3://<bucket>/
 
 Se usa un único IAM Role con las siguientes políticas:
 
-| Servicio | Permisos |
-|---|---|
-| S3 | `s3:GetObject`, `s3:PutObject`, `s3:ListBucket` sobre el bucket del proyecto |
-| Glue | `glue:GetDatabase`, `glue:GetTable`, `glue:CreateTable`, `glue:UpdateTable` |
-| Athena | `athena:StartQueryExecution`, `athena:GetQueryResults` |
+| Servicio | Permisos                                                                     |
+| -------- | ---------------------------------------------------------------------------- |
+| S3       | `s3:GetObject`, `s3:PutObject`, `s3:ListBucket` sobre el bucket del proyecto |
+| Glue     | `glue:GetDatabase`, `glue:GetTable`, `glue:CreateTable`, `glue:UpdateTable`  |
+| Athena   | `athena:StartQueryExecution`, `athena:GetQueryResults`                       |
 
 Este role se asigna a los Glue Jobs y se referencia desde Athena. No se otorgan permisos sobre otros buckets ni servicios fuera del alcance del proyecto.
 
@@ -269,6 +274,7 @@ Glue soporta Crawlers incrementales que solo procesan las particiones nuevas des
 
 **Costo estimado (referencial):**
 Para el dataset completo (~200 archivos CSV, estimado ~10 GB en crudo):
+
 - S3: menos de USD 0.25/mes en almacenamiento (con compresión Parquet, ~2 GB)
 - Glue Jobs: costo único de transformación, del orden de USD 1–5 en total
 - Athena: USD 5 por TB escaneado; con Parquet y particionado, las consultas típicas escanean menos de 50 MB
@@ -277,13 +283,13 @@ Para el dataset completo (~200 archivos CSV, estimado ~10 GB en crudo):
 
 ## 7. Registro de Decisiones
 
-| Decisión | Alternativa considerada | Justificación |
-|---|---|---|
-| Formato Parquet en processed | CSV en processed | Menor costo en Athena, mejor rendimiento en consultas |
-| Particionado por `year` | Sin particionado | Permite partition pruning y reduce datos escaneados |
-| Un Job de Glue por archivo | Un único Job para los tres | Facilita mantenimiento, permite ejecución paralela y aísla errores |
-| Un bucket con prefijos | Un bucket por capa | Simplifica permisos IAM y reduce overhead de configuración |
-| Athena serverless | Redshift o RDS | Sin infraestructura fija, costo por consulta, integración nativa con S3 y Glue |
+| Decisión                     | Alternativa considerada    | Justificación                                                                  |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| Formato Parquet en processed | CSV en processed           | Menor costo en Athena, mejor rendimiento en consultas                          |
+| Particionado por `year`      | Sin particionado           | Permite partition pruning y reduce datos escaneados                            |
+| Un Job de Glue por archivo   | Un único Job para los tres | Facilita mantenimiento, permite ejecución paralela y aísla errores             |
+| Un bucket con prefijos       | Un bucket por capa         | Simplifica permisos IAM y reduce overhead de configuración                     |
+| Athena serverless            | Redshift o RDS             | Sin infraestructura fija, costo por consulta, integración nativa con S3 y Glue |
 
 ---
 
