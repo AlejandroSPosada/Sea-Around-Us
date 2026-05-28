@@ -16,10 +16,10 @@ El objetivo es construir un pipeline completo de ingestión, transformación, ca
 
 ## Equipo
 
-| Nombre | Responsabilidad principal |
-|---|---|
-| Alejandro Sepúlveda | Infraestructura S3 e ingestión de datos |
-| Samuel Aristizabal | ETL, limpieza y catálogo de datos (Glue) |
+| Nombre                  | Responsabilidad principal                |
+| ----------------------- | ---------------------------------------- |
+| Alejandro Sepúlveda     | Infraestructura S3 e ingestión de datos  |
+| Samuel Aristizabal      | ETL, limpieza y catálogo de datos (Glue) |
 | Gabriela Lucía Martínez | Consultas Athena y capa de visualización |
 
 ---
@@ -28,15 +28,16 @@ El objetivo es construir un pipeline completo de ingestión, transformación, ca
 
 Los tres archivos CSV provienen del sitio oficial de The Sea Around Us (seaaroundus.org):
 
-| Archivo | Descripción |
-|---|---|
-| `SAU-GLOBAL-1-v48-0.csv` | Capturas en todas las áreas de alta mar del mundo |
+| Archivo                     | Descripción                                                 |
+| --------------------------- | ----------------------------------------------------------- |
+| `SAU-GLOBAL-1-v48-0.csv`    | Capturas en todas las áreas de alta mar del mundo           |
 | `SAU-HighSeas-71-v48-0.csv` | Capturas en el Pacífico Central Occidental (próxima a Fiyi) |
-| `SAU-EEZ-242-v48-0.csv` | Capturas en la Zona Económica Exclusiva de Fiyi |
+| `SAU-EEZ-242-v48-0.csv`     | Capturas en la Zona Económica Exclusiva de Fiyi             |
 
 ### Esquemas
 
 **SAU-EEZ-242** (ZEE de Fiyi)
+
 ```
 area_name, area_type, data_layer, uncertainty_score, year, scientific_name,
 fish_name, functional_group, commercial_group, country, fishing_sector,
@@ -44,12 +45,14 @@ catch_type, reporting_status, gear_type, end_use_type, tonnes, landed_value
 ```
 
 **SAU-GLOBAL-1** (Alta mar global)
+
 ```
 year, fishing_entity, fishing_sector, catch_type, reporting_status,
 gear_type, end_use_type, tonnes, landed_value
 ```
 
 **SAU-HighSeas-71** (Pacífico Central Occidental)
+
 ```
 area_name, area_type, year, scientific_name, common_name, functional_group,
 commercial_group, fishing_entity, fishing_sector, catch_type, reporting_status,
@@ -122,11 +125,13 @@ Visualizaciones y reportes analíticos
 ## Instrucciones de Despliegue
 
 ### Prerrequisitos
+
 - Cuenta AWS con permisos sobre S3, Glue y Athena
 - AWS CLI configurado (`aws configure`)
 - Python 3.9+ con `boto3` instalado
 
 ### 1. Carga de datos a S3
+
 ```bash
 aws s3 cp data/raw/SAU-GLOBAL-1-v48-0.csv     s3://<bucket>/raw/global/
 aws s3 cp data/raw/SAU-HighSeas-71-v48-0.csv  s3://<bucket>/raw/highseas/
@@ -134,12 +139,15 @@ aws s3 cp data/raw/SAU-EEZ-242-v48-0.csv      s3://<bucket>/raw/eez/
 ```
 
 ### 2. Ejecutar Jobs de Glue
+
 Desde la consola de AWS Glue o mediante CLI, ejecutar los jobs en el orden: `clean_global → clean_highseas → clean_eez`.
 
 ### 3. Correr los Crawlers
+
 Ejecutar los Crawlers para que detecten el esquema de los datos procesados y actualicen el Data Catalog.
 
 ### 4. Consultas en Athena
+
 Abrir Amazon Athena, seleccionar la base de datos del catálogo (`seaaroundus_db`) y ejecutar las consultas de `queries/exploratory/`.
 
 ---

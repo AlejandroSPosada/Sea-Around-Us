@@ -13,6 +13,7 @@
 ## ALEJANDRO SEPÚLVEDA — Infraestructura S3 e Ingestión de Datos
 
 **1.1 Configurar el bucket S3**
+
 - [x] Crear el bucket principal en AWS S3 (ej: `seaaroundus-data-<iniciales>`)
 - [x] Crear la estructura de prefijos: `raw/global/`, `raw/highseas/`, `raw/eez/`, `processed/`, `query-results/`
 - [x] Habilitar versionado en el bucket
@@ -20,6 +21,7 @@
 - [x] Anotar el nombre del bucket y el ARN del role en `docs/architecture.md`
 
 **1.2 Descargar y validar los archivos CSV**
+
 - [x] Descargar `SAU-GLOBAL-1-v48-0.csv` desde seaaroundus.org
 - [x] Descargar `SAU-HighSeas-71-v48-0.csv` desde seaaroundus.org
 - [x] Descargar `SAU-EEZ-242-v48-0.csv` desde seaaroundus.org
@@ -28,6 +30,7 @@
 - [x] Confirmar que los encabezados coinciden con los esquemas documentados en el README
 
 **1.3 Subir los CSV a S3**
+
 - [x] Subir `SAU-GLOBAL-1-v48-0.csv` a `s3://<bucket>/raw/global/`
 - [x] Subir `SAU-HighSeas-71-v48-0.csv` a `s3://<bucket>/raw/highseas/`
 - [x] Subir `SAU-EEZ-242-v48-0.csv` a `s3://<bucket>/raw/eez/`
@@ -35,6 +38,7 @@
 - [x] Compartir el nombre del bucket y las rutas con Samuel Aristizabal
 
 **1.4 Documentar la arquitectura y escalabilidad**
+
 - [x] Redactar el diagrama del pipeline (S3 → Glue → Athena) en `docs/architecture.md`
 - [x] Documentar las decisiones de estructura de prefijos en S3
 - [x] Proponer y documentar la estrategia de particionado para el dataset completo (todas las regiones oceánicas)
@@ -48,39 +52,44 @@
 > Prerequisito: Alejandro debe haber terminado la sección 1.3 y compartido el nombre del bucket y las rutas.
 
 **2.1 Crear el Job de Glue para SAU-GLOBAL-1 (alta mar global)**
-- [ ] Crear el Job en AWS Glue apuntando a `s3://<bucket>/raw/global/`
-- [ ] Normalizar nombres de columnas a snake_case
-- [ ] Castear `year` a entero, `tonnes` y `landed_value` a float
-- [ ] Manejar valores nulos: registrar cuántos hay por columna y decidir tratamiento
-- [ ] Guardar el resultado en `s3://<bucket>/processed/global/` en formato Parquet, particionado por `year`
-- [ ] Verificar conteo de filas: processed debe tener el mismo número que raw (descontando nulos eliminados)
+
+- [x] Crear el Job en AWS Glue apuntando a `s3://<bucket>/raw/global/`
+- [x] Normalizar nombres de columnas a snake_case
+- [x] Castear `year` a entero, `tonnes` y `landed_value` a float
+- [x] Manejar valores nulos: registrar cuántos hay por columna y decidir tratamiento
+- [x] Guardar el resultado en `s3://<bucket>/processed/global/` en formato Parquet, particionado por `year`
+- [x] Verificar conteo de filas: processed debe tener el mismo número que raw (descontando nulos eliminados)
 
 **2.2 Crear el Job de Glue para SAU-HighSeas-71 (Pacífico Central Occidental)**
-- [ ] Crear el Job apuntando a `s3://<bucket>/raw/highseas/`
-- [ ] Aplicar los mismos pasos de normalización, casteo y manejo de nulos
-- [ ] Guardar en `s3://<bucket>/processed/highseas/` en formato Parquet, particionado por `year`
-- [ ] Verificar conteo de filas
+
+- [x] Crear el Job apuntando a `s3://<bucket>/raw/highseas/`
+- [x] Aplicar los mismos pasos de normalización, casteo y manejo de nulos
+- [x] Guardar en `s3://<bucket>/processed/highseas/` en formato Parquet, particionado por `year`
+- [x] Verificar conteo de filas
 
 **2.3 Crear el Job de Glue para SAU-EEZ-242 (ZEE de Fiyi)**
-- [ ] Crear el Job apuntando a `s3://<bucket>/raw/eez/`
-- [ ] Aplicar normalización, casteo y manejo de nulos
-- [ ] Tratar columnas adicionales: `data_layer`, `uncertainty_score`, `country`
-- [ ] Guardar en `s3://<bucket>/processed/eez/` en formato Parquet, particionado por `year`
-- [ ] Verificar conteo de filas
+
+- [x] Crear el Job apuntando a `s3://<bucket>/raw/eez/`
+- [x] Aplicar normalización, casteo y manejo de nulos
+- [x] Tratar columnas adicionales: `data_layer`, `uncertainty_score`, `country`
+- [x] Guardar en `s3://<bucket>/processed/eez/` en formato Parquet, particionado por `year`
+- [x] Verificar conteo de filas
 
 **2.4 Configurar el Glue Data Catalog**
-- [ ] Crear la base de datos en el catálogo: `seaaroundus_db`
-- [ ] Configurar un Crawler para `processed/global/` y ejecutarlo
-- [ ] Configurar un Crawler para `processed/highseas/` y ejecutarlo
-- [ ] Configurar un Crawler para `processed/eez/` y ejecutarlo
-- [ ] Verificar que los tres Crawlers inferieron correctamente los esquemas (tipos de datos, particiones)
-- [ ] Corregir en el catálogo cualquier tipo de dato mal inferido
-- [ ] Documentar el esquema final de cada tabla en `infra/glue/`
+
+- [x] Crear la base de datos en el catálogo: `seaaroundus_db`
+- [x] Configurar un Crawler para `processed/global/` y ejecutarlo
+- [x] Configurar un Crawler para `processed/highseas/` y ejecutarlo
+- [x] Configurar un Crawler para `processed/eez/` y ejecutarlo
+- [x] Verificar que los tres Crawlers inferieron correctamente los esquemas (tipos de datos, particiones)
+- [x] Corregir en el catálogo cualquier tipo de dato mal inferido
+- [x] Documentar el esquema final de cada tabla en `infra/glue/`
 
 **2.5 Notificar a Gabriela Lucía Martínez**
-- [ ] Confirmar que las tres tablas están en el catálogo y son consultables
-- [ ] Compartir el nombre de la base de datos del catálogo (`seaaroundus_db`) y los nombres de tabla
-- [ ] Compartir el prefijo del bucket de resultados de Athena (`s3://<bucket>/query-results/`)
+
+- [x] Confirmar que las tres tablas están en el catálogo y son consultables
+- [x] Compartir el nombre de la base de datos del catálogo (`seaaroundus_db`) y los nombres de tabla
+- [x] Compartir el prefijo del bucket de resultados de Athena (`s3://<bucket>/query-results/`)
 
 ---
 
@@ -89,39 +98,43 @@
 > Prerequisito: Samuel debe haber terminado la sección 2.5 y compartido la información del catálogo.
 
 **3.1 Configurar Amazon Athena**
-- [ ] Abrir Athena en la consola de AWS
-- [ ] Configurar el bucket de resultados: `s3://<bucket>/query-results/`
-- [ ] Seleccionar la base de datos `seaaroundus_db`
-- [ ] Verificar conectividad con una consulta simple (`SELECT COUNT(*) FROM global`) en cada tabla
-- [ ] Confirmar que las tres tablas devuelven resultados correctos
+
+- [x] Abrir Athena en la consola de AWS
+- [x] Configurar el bucket de resultados: `s3://<bucket>/query-results/`
+- [x] Seleccionar la base de datos `seaaroundus_db`
+- [x] Verificar conectividad con una consulta simple (`SELECT COUNT(*) FROM global`) en cada tabla
+- [x] Confirmar que las tres tablas devuelven resultados correctos
 
 **3.2 Consultas exploratorias** (`queries/exploratory/`)
-- [ ] Top 10 entidades pesqueras con mayor captura total (toneladas) en el dataset global
-- [ ] Tendencia histórica de toneladas capturadas en la ZEE de Fiyi por año (1950–2018)
-- [ ] Comparación de capturas en alta mar vs. ZEE para el área del Pacífico Central Occidental
-- [ ] Distribución de capturas por `fishing_sector` (industrial vs. subsistencia) en la ZEE de Fiyi
-- [ ] Porcentaje de capturas reportadas vs. no reportadas (`reporting_status`) por fuente de datos
-- [ ] Top 5 especies (`scientific_name`) más capturadas por década en la ZEE de Fiyi
-- [ ] Evolución del valor económico total (`landed_value`) por año en el dataset global
-- [ ] Guardar los resultados de cada consulta desde Athena (exportar a CSV)
+
+- [x] Top 10 entidades pesqueras con mayor captura total (toneladas) en el dataset global
+- [x] Tendencia histórica de toneladas capturadas en la ZEE de Fiyi por año (1950–2018)
+- [x] Comparación de capturas en alta mar vs. ZEE para el área del Pacífico Central Occidental
+- [x] Distribución de capturas por `fishing_sector` (industrial vs. subsistencia) en la ZEE de Fiyi
+- [x] Porcentaje de capturas reportadas vs. no reportadas (`reporting_status`) por fuente de datos
+- [x] Top 5 especies (`scientific_name`) más capturadas por década en la ZEE de Fiyi
+- [x] Evolución del valor económico total (`landed_value`) por año en el dataset global
+- [x] Guardar los resultados de cada consulta desde Athena (exportar a CSV)
 
 **3.3 Consultas para el informe final** (`queries/reports/`)
-- [ ] Consolidar las 3 consultas más relevantes con comentarios explicativos
-- [ ] Validar que los resultados son consistentes entre las tres fuentes de datos
-- [ ] Cruzar datos de `SAU-HighSeas-71` y `SAU-EEZ-242` para comparar la región del Pacífico
+
+- [x] Consolidar las 3 consultas más relevantes con comentarios explicativos
+- [x] Validar que los resultados son consistentes entre las tres fuentes de datos
+- [x] Cruzar datos de `SAU-HighSeas-71` y `SAU-EEZ-242` para comparar la región del Pacífico
 
 **3.4 Visualizaciones y reporte analítico**
-- [ ] Definir qué gráficas se incluirán: series de tiempo, barras comparativas, top N
-- [ ] Generar las visualizaciones con la herramienta elegida (QuickSight, Python/matplotlib o Jupyter Notebook)
-- [ ] Incluir al menos: (1) tendencia histórica de capturas en Fiyi, (2) top países por captura global, (3) comparación alta mar vs. ZEE
-- [ ] Documentar el diseño y las decisiones de visualización en `viz/dashboard_notes.md`
-- [ ] Exportar las gráficas finales en formato imagen o HTML para incluir en el informe
+
+- [x] Definir qué gráficas se incluirán: series de tiempo, barras comparativas, top N
+- [x] Generar las visualizaciones con la herramienta elegida (QuickSight, Python/matplotlib o Jupyter Notebook)
+- [x] Incluir al menos: (1) tendencia histórica de capturas en Fiyi, (2) top países por captura global, (3) comparación alta mar vs. ZEE
+- [x] Documentar el diseño y las decisiones de visualización en `viz/dashboard_notes.md`
+- [x] Exportar las gráficas finales en formato imagen o HTML para incluir en el informe
 
 ---
 
 ## Tareas Compartidas
 
-- [ ] Acordar convenciones de nombres (bucket, tablas, columnas) antes de comenzar
+- [x] Acordar convenciones de nombres (bucket, tablas, columnas) antes de comenzar
 - [ ] Revisar y aprobar el README.md antes de la entrega
 - [ ] Ejecutar una prueba de integración end-to-end: S3 raw → Glue → Athena → resultado en pantalla
 - [ ] Preparar el informe técnico final con: arquitectura, decisiones de diseño, consultas destacadas, visualizaciones y análisis de escalabilidad
