@@ -1,0 +1,34 @@
+import sys
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from pyspark.sql.functions import col
+
+# Inicialización de contextos de Spark y Glue
+sc = SparkContext.getOrCreate()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+
+# Rutas de S3 especificadas
+input_path = "s3://seaaroundus-data-eafit/raw/global/"
+output_path = "s3://seaaroundus-data-eafit/processed/global/"
+
+# 1. Lectura del CSV desde la capa Raw
+df = spark.read.option("header", "true").option("inferSchema", "true").csv(input_path)
+
+# 2. Normalización de nombres de columnas a snake_case
+for column in df.columns:
+    clean_col = column.strip().lower().replace(" ", "_").replace("-", "_")
+    df = df.withColumnRenamed(column, clean_col)
+
+# 3. Casteo de columnas principales
+df = df.withColumn("year", col("year").cast("integer")) \
+       .withColumn("tonnes", col("tonnes").cast("float")) \
+       .withColumn("landed_value", col("landed_value").cast("float"))
+
+# 4. Manejo de valores nulos 
+df = df.dropna(subset=["year", "tonnes"])
+df = df.fillna({"landed_value": 0.0}) # Llenamos con 0 el valor si no está reportado
+
+# 5. Escritura en formato Parquet particionado por 'year' en la capa Processed
+df.write.mode("overwrite").partitionBy("year").parquet(output_path)
